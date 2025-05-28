@@ -8,12 +8,7 @@
       "serviceType": "imported"
     }
   },
-  "hosting": {
-    "S3AndCloudFront": {
-      "providerPlugin": "awscloudformation",
-      "service": "S3AndCloudFront"
-    }
-  },
+  "hosting": {},
   "parameters": {
     "AMPLIFY_auth_mytaskmanagerfrontenae0de15f_nativeClientId": {
       "usedBy": [
