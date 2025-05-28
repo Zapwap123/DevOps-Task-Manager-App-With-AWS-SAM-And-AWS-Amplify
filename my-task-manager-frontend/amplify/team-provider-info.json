@@ -19,6 +19,9 @@
           "webClientId": "49r9c2cb9vi1103c844adrrd75",
           "nativeClientId": "49r9c2cb9vi1103c844adrrd75"
         }
+      },
+      "hosting": {
+        "S3AndCloudFront": {}
       }
     }
   }

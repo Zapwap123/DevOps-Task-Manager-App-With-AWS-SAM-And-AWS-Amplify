@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Amplify } from "aws-amplify";
 import { Authenticator, useAuthenticator } from "@aws-amplify/ui-react";
-import { getCurrentUserGroups } from "./auth";
+import { getCurrentUserGroups } from "./auth.js";
 import AdminDashboard from "./pages/AdminDashboard";
 import MemberDashboard from "./pages/MemberDashboard.jsx";
 import awsExports from "./aws-exports";
