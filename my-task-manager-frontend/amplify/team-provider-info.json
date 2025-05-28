@@ -1,0 +1,25 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-mytaskmanagerfronten-dev-1a95a-authRole",
+      "UnauthRoleArn": "arn:aws:iam::265267290744:role/amplify-mytaskmanagerfronten-dev-1a95a-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::265267290744:role/amplify-mytaskmanagerfronten-dev-1a95a-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-mytaskmanagerfronten-dev-1a95a-deployment",
+      "UnauthRoleName": "amplify-mytaskmanagerfronten-dev-1a95a-unauthRole",
+      "StackName": "amplify-mytaskmanagerfronten-dev-1a95a",
+      "StackId": "arn:aws:cloudformation:eu-west-1:265267290744:stack/amplify-mytaskmanagerfronten-dev-1a95a/fa7f7250-3bae-11f0-bad0-0a6c1112c1dd",
+      "AmplifyAppId": "dtpj1l0uqgd70"
+    },
+    "categories": {
+      "auth": {
+        "mytaskmanagerfrontenae0de15f": {
+          "userPoolId": "eu-west-1_AyCv6g36t",
+          "userPoolName": "TaskManagerUserPool2025",
+          "webClientId": "49r9c2cb9vi1103c844adrrd75",
+          "nativeClientId": "49r9c2cb9vi1103c844adrrd75"
+        }
+      }
+    }
+  }
+}

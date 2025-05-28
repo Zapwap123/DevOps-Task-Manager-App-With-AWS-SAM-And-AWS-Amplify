@@ -1,0 +1,75 @@
+const AWS = require("aws-sdk");
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const sns = new AWS.SNS();
+
+const TASKS_TABLE = process.env.TASKS_TABLE;
+const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN;
+
+exports.handler = async (event) => {
+  try {
+    const claims = event.requestContext.authorizer.claims;
+    const groups = claims["cognito:groups"] || [];
+    const username = claims["cognito:username"];
+
+    const taskId = event.pathParameters.taskId;
+    const body = JSON.parse(event.body);
+
+    // Only assigned user or admin can update status
+    // First, fetch the task to validate
+    const taskData = await dynamoDb
+      .get({
+        TableName: TASKS_TABLE,
+        Key: { taskId },
+      })
+      .promise();
+
+    if (!taskData.Item) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: "Task not found" }),
+      };
+    }
+
+    if (!groups.includes("Admin") && taskData.Item.assignedTo !== username) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: "Forbidden to update this task" }),
+      };
+    }
+
+    // Update status
+    await dynamoDb
+      .update({
+        TableName: TASKS_TABLE,
+        Key: { taskId },
+        UpdateExpression: "set #s = :status",
+        ExpressionAttributeNames: {
+          "#s": "status",
+        },
+        ExpressionAttributeValues: {
+          ":status": body.status,
+        },
+      })
+      .promise();
+
+    // Notify via SNS about status update
+    await sns
+      .publish({
+        TopicArn: NOTIFICATION_TOPIC_ARN,
+        Message: `Task "${taskData.Item.title}" status updated to ${body.status} by ${username}`,
+        Subject: "Task Status Updated",
+      })
+      .promise();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: "Task status updated" }),
+    };
+  } catch (error) {
+    console.error("Error updating task status:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Internal Server Error" }),
+    };
+  }
+};

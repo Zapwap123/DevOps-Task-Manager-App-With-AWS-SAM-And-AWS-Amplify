@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Task Management System Backend
+Globals:
+  Function:
+    Timeout: 10
+    Runtime: nodejs18.x
+Resources:
+  TasksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TasksTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: taskId
+        AttributeType: S
+      - AttributeName: assignedTo
+        AttributeType: S
+      KeySchema:
+      - AttributeName: taskId
+        KeyType: HASH
+      GlobalSecondaryIndexes:
+      - IndexName: AssignedToIndex
+        KeySchema:
+        - AttributeName: assignedTo
+          KeyType: HASH
+        Projection:
+          ProjectionType: ALL
+  TaskNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: TaskNotificationTopic
+  TaskManagerApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: TaskManagerApi
+      StageName: Prod
+      Auth:
+        DefaultAuthorizer: CognitoAuth
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          CognitoAuth:
+            UserPoolArn: arn:aws:cognito-idp:eu-west-1:265267290744:userpool/eu-west-1_AyCv6g36t
+  CreateTaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: CreateTaskFunction
+      Handler: createTask.handler
+      Events:
+        CreateTaskApi:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: TaskManagerApi
+            Path: /tasks
+            Method: POST
+      Environment:
+        Variables:
+          TASKS_TABLE:
+            Ref: TasksTable
+          NOTIFICATION_TOPIC_ARN:
+            Ref: TaskNotificationTopic
+    Metadata:
+      SamResourceId: CreateTaskFunction
+  GetTasksFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetTasksFunction
+      Handler: getTasks.handler
+      Events:
+        GetTasksApi:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: TaskManagerApi
+            Path: /tasks
+            Method: GET
+      Environment:
+        Variables:
+          TASKS_TABLE:
+            Ref: TasksTable
+    Metadata:
+      SamResourceId: GetTasksFunction
+  UpdateTaskStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: UpdateTaskStatusFunction
+      Handler: updateTaskStatus.handler
+      Events:
+        UpdateTaskApi:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: TaskManagerApi
+            Path: /tasks/{taskId}/status
+            Method: PUT
+      Environment:
+        Variables:
+          TASKS_TABLE:
+            Ref: TasksTable
+          NOTIFICATION_TOPIC_ARN:
+            Ref: TaskNotificationTopic
+    Metadata:
+      SamResourceId: UpdateTaskStatusFunction
+  DeadlineCheckerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: DeadlineCheckerFunction
+      Handler: notifyOnDeadline.handler
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)
+      Environment:
+        Variables:
+          TASKS_TABLE:
+            Ref: TasksTable
+          NOTIFICATION_TOPIC_ARN:
+            Ref: TaskNotificationTopic
+    Metadata:
+      SamResourceId: DeadlineCheckerFunction
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value:
+      Fn::Sub: https://${TaskManagerApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/
