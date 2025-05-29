@@ -35,6 +35,10 @@ Resources:
     Properties:
       Name: TaskManagerApi
       StageName: Prod
+      Cors:
+        AllowMethods: '''OPTIONS,GET,POST,PUT'''
+        AllowHeaders: '''Content-Type,Authorization'''
+        AllowOrigin: '''*'''
       Auth:
         DefaultAuthorizer: CognitoAuth
         AddDefaultAuthorizerToCorsPreflight: false

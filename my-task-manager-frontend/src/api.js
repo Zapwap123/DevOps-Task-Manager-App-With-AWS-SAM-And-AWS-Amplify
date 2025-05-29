@@ -2,28 +2,19 @@ import { fetchAuthSession } from "@aws-amplify/auth";
 
 const apiUrl = "https://sk749ylzhl.execute-api.eu-west-1.amazonaws.com/Prod";
 
-export async function fetchWithAuth(url, options = {}) {
-  try {
-    const session = await fetchAuthSession();
-    const token = session.getIdToken().getJwtToken();
+export async function fetchWithAuth(path, options = {}) {
+  const session = await fetchAuthSession();
+  const token = session.tokens?.idToken?.toString(); // ✅ Correct way in v6+
 
-    const response = await fetch(`${apiUrl}${url}`, {
-      ...options,
-      headers: {
-        ...(options.headers || {}),
-        Authorization: token,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Request failed: ${response.status} - ${errorBody}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Auth or fetch error:", error);
-    throw error;
-  }
+  return fetch(`${apiUrl}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token,
+      ...(options.headers || {}),
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("API error");
+    return res.json();
+  });
 }

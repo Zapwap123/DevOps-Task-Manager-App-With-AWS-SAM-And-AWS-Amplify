@@ -40,12 +40,17 @@ Resources:
     Properties:
       Name: TaskManagerApi
       StageName: Prod
+      Cors:
+        AllowMethods: "'OPTIONS,GET,POST,PUT'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
       Auth:
         DefaultAuthorizer: CognitoAuth
         AddDefaultAuthorizerToCorsPreflight: false
         Authorizers:
           CognitoAuth:
             UserPoolArn: arn:aws:cognito-idp:eu-west-1:265267290744:userpool/eu-west-1_AyCv6g36t
+
 
   CreateTaskFunction:
     Type: AWS::Serverless::Function
@@ -58,7 +63,7 @@ Resources:
           Properties:
             RestApiId: !Ref TaskManagerApi
             Path: /tasks
-            Method: POST
+            Method: POST           
       Environment:
         Variables:
           TASKS_TABLE: !Ref TasksTable
