@@ -3,7 +3,31 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 const TASKS_TABLE = process.env.TASKS_TABLE;
 
+// Allowed frontend origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://main.dtpj1l0uqgd70.amplifyapp.com",
+];
+
 exports.handler = async (event) => {
+  const origin = event.headers.origin || event.headers.Origin;
+  const isAllowed = allowedOrigins.includes(origin);
+
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": isAllowed ? origin : "",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT",
+  };
+
+  // Handle CORS preflight
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: JSON.stringify({ message: "CORS preflight OK" }),
+    };
+  }
+
   try {
     const claims = event.requestContext.authorizer.claims;
     const groups = claims["cognito:groups"] || [];
@@ -12,18 +36,19 @@ exports.handler = async (event) => {
     let params;
 
     if (groups.includes("Admin")) {
-      // Admin can see all tasks
+      // Admin sees all tasks
       params = {
         TableName: TASKS_TABLE,
       };
-
       const data = await dynamoDb.scan(params).promise();
+
       return {
         statusCode: 200,
+        headers: corsHeaders,
         body: JSON.stringify(data.Items),
       };
     } else {
-      // Members only see their assigned tasks via GSI
+      // Member sees only assigned tasks
       params = {
         TableName: TASKS_TABLE,
         IndexName: "AssignedToIndex",
@@ -32,11 +57,11 @@ exports.handler = async (event) => {
           ":user": username,
         },
       };
-
       const data = await dynamoDb.query(params).promise();
 
       return {
         statusCode: 200,
+        headers: corsHeaders,
         body: JSON.stringify(data.Items),
       };
     }
@@ -44,6 +69,7 @@ exports.handler = async (event) => {
     console.error("Error fetching tasks:", error);
     return {
       statusCode: 500,
+      headers: corsHeaders,
       body: JSON.stringify({ message: "Internal Server Error" }),
     };
   }

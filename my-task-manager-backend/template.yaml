@@ -5,7 +5,7 @@ Description: Task Management System Backend
 Globals:
   Function:
     Timeout: 10
-    Runtime: nodejs18.x
+    Runtime: nodejs16.x
 
 Resources:
 
@@ -43,7 +43,8 @@ Resources:
       Cors:
         AllowMethods: "'OPTIONS,GET,POST,PUT'"
         AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
+        AllowOrigin: "'https://main.dtpj1l0uqgd70.amplifyapp.com'"
+
       Auth:
         DefaultAuthorizer: CognitoAuth
         AddDefaultAuthorizerToCorsPreflight: false

@@ -7,12 +7,27 @@ const TASKS_TABLE = process.env.TASKS_TABLE;
 const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN;
 
 exports.handler = async (event) => {
+  const headers = {
+    "Access-Control-Allow-Origin": "https://main.dtpj1l0uqgd70.amplifyapp.com",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT",
+  };
+
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers,
+      body: "",
+    };
+  }
+
   try {
     const groups =
       event.requestContext.authorizer.claims["cognito:groups"] || [];
     if (!groups.includes("Admin")) {
       return {
         statusCode: 403,
+        headers,
         body: JSON.stringify({ message: "Only Admins can create tasks." }),
       };
     }
@@ -47,12 +62,14 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 201,
+      headers,
       body: JSON.stringify({ message: "Task created", task: taskItem }),
     };
   } catch (error) {
     console.error("Error creating task:", error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ message: "Internal Server Error" }),
     };
   }
