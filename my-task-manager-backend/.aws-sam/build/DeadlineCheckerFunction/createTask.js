@@ -1,10 +1,12 @@
 const AWS = require("aws-sdk");
 const { v4: uuidv4 } = require("uuid");
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const sns = new AWS.SNS();
+const ses = new AWS.SES();
+const cognito = new AWS.CognitoIdentityServiceProvider();
 
 const TASKS_TABLE = process.env.TASKS_TABLE;
-const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN;
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
+const USER_POOL_ID = process.env.USER_POOL_ID;
 
 exports.handler = async (event) => {
   const headers = {
@@ -35,11 +37,31 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body);
     const taskId = uuidv4();
 
+    const assignedUsername = body.assignedTo;
+
+    // 👇 Fetch email from Cognito
+    const userData = await cognito
+      .adminGetUser({
+        UserPoolId: USER_POOL_ID,
+        Username: assignedUsername,
+      })
+      .promise();
+
+    const emailAttr = userData.UserAttributes.find(
+      (attr) => attr.Name === "email"
+    );
+
+    if (!emailAttr) {
+      throw new Error("Assigned user has no email attribute.");
+    }
+
+    const assignedEmail = emailAttr.Value;
+
     const taskItem = {
       taskId,
       title: body.title,
       description: body.description,
-      assignedTo: body.assignedTo,
+      assignedTo: assignedUsername,
       status: "Pending",
       deadline: body.deadline,
       createdAt: new Date().toISOString(),
@@ -52,18 +74,30 @@ exports.handler = async (event) => {
       })
       .promise();
 
-    await sns
-      .publish({
-        TopicArn: NOTIFICATION_TOPIC_ARN,
-        Message: `New task assigned: "${taskItem.title}" to ${taskItem.assignedTo}`,
-        Subject: "New Task Assigned",
+    await ses
+      .sendEmail({
+        Source: SENDER_EMAIL,
+        Destination: {
+          ToAddresses: [assignedEmail],
+        },
+        Message: {
+          Subject: { Data: "New Task Assigned" },
+          Body: {
+            Text: {
+              Data: `Hello ${assignedUsername},\n\nYou have been assigned a new task:\n\nTitle: ${taskItem.title}\nDescription: ${taskItem.description}\nDeadline: ${taskItem.deadline}`,
+            },
+          },
+        },
       })
       .promise();
 
     return {
       statusCode: 201,
       headers,
-      body: JSON.stringify({ message: "Task created", task: taskItem }),
+      body: JSON.stringify({
+        message: "Task created and email sent",
+        task: taskItem,
+      }),
     };
   } catch (error) {
     console.error("Error creating task:", error);

@@ -5,6 +5,12 @@ Globals:
   Function:
     Timeout: 10
     Runtime: nodejs16.x
+    Environment:
+      Variables:
+        TASKS_TABLE:
+          Ref: TasksTable
+        USER_POOL_ID: eu-west-1_AyCv6g36t
+        SENDER_EMAIL: seth.anmawen@amalitechtraining.org
 Resources:
   TasksTable:
     Type: AWS::DynamoDB::Table
@@ -58,11 +64,21 @@ Resources:
               Ref: TaskManagerApi
             Path: /tasks
             Method: POST
-      Environment:
-        Variables:
-          TASKS_TABLE:
-            Ref: TasksTable
-          NOTIFICATION_TOPIC_ARN:
+      Policies:
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - ses:SendEmail
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - cognito-idp:AdminGetUser
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - sns:Publish
+          Resource:
             Ref: TaskNotificationTopic
     Metadata:
       SamResourceId: CreateTaskFunction
@@ -79,10 +95,6 @@ Resources:
               Ref: TaskManagerApi
             Path: /tasks
             Method: GET
-      Environment:
-        Variables:
-          TASKS_TABLE:
-            Ref: TasksTable
     Metadata:
       SamResourceId: GetTasksFunction
   UpdateTaskStatusFunction:
@@ -98,11 +110,21 @@ Resources:
               Ref: TaskManagerApi
             Path: /tasks/{taskId}/status
             Method: PUT
-      Environment:
-        Variables:
-          TASKS_TABLE:
-            Ref: TasksTable
-          NOTIFICATION_TOPIC_ARN:
+      Policies:
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - ses:SendEmail
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - cognito-idp:AdminGetUser
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - sns:Publish
+          Resource:
             Ref: TaskNotificationTopic
     Metadata:
       SamResourceId: UpdateTaskStatusFunction
@@ -116,11 +138,21 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(1 day)
-      Environment:
-        Variables:
-          TASKS_TABLE:
-            Ref: TasksTable
-          NOTIFICATION_TOPIC_ARN:
+      Policies:
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - ses:SendEmail
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - cognito-idp:AdminGetUser
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - sns:Publish
+          Resource:
             Ref: TaskNotificationTopic
     Metadata:
       SamResourceId: DeadlineCheckerFunction

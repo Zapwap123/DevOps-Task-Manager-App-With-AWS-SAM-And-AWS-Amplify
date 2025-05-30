@@ -1,11 +1,12 @@
 const AWS = require("aws-sdk");
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
-const sns = new AWS.SNS();
+const cognito = new AWS.CognitoIdentityServiceProvider();
+const ses = new AWS.SES();
 
 const TASKS_TABLE = process.env.TASKS_TABLE;
-const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN;
+const USER_POOL_ID = process.env.USER_POOL_ID;
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
 
-// Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:3000",
   "https://main.dtpj1l0uqgd70.amplifyapp.com",
@@ -21,7 +22,6 @@ exports.handler = async (event) => {
     "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT",
   };
 
-  // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -75,13 +75,51 @@ exports.handler = async (event) => {
       })
       .promise();
 
-    await sns
-      .publish({
-        TopicArn: NOTIFICATION_TOPIC_ARN,
-        Message: `Task "${taskData.Item.title}" status updated to ${body.status} by ${username}`,
-        Subject: "Task Status Updated",
-      })
-      .promise();
+    const assignedUsername = taskData.Item.assignedTo;
+
+    let email;
+    try {
+      const userData = await cognito
+        .adminGetUser({
+          UserPoolId: USER_POOL_ID,
+          Username: assignedUsername,
+        })
+        .promise();
+
+      const emailAttr = userData.UserAttributes.find(
+        (attr) => attr.Name === "email"
+      );
+      email = emailAttr?.Value;
+    } catch (err) {
+      console.error(
+        `Could not fetch Cognito user email for ${assignedUsername}`,
+        err
+      );
+    }
+
+    if (email) {
+      const emailParams = {
+        Source: SENDER_EMAIL,
+        Destination: { ToAddresses: [email] },
+        Message: {
+          Subject: {
+            Data: `Task Status Updated: ${taskData.Item.title}`,
+            Charset: "UTF-8",
+          },
+          Body: {
+            Text: {
+              Data: `Hi ${assignedUsername},\n\nYour task "${taskData.Item.title}" was updated to status "${body.status}" by ${username}.\n\nRegards,\nTask Manager`,
+              Charset: "UTF-8",
+            },
+          },
+        },
+      };
+
+      await ses.sendEmail(emailParams).promise();
+      console.log(`Email sent to ${email}`);
+    } else {
+      console.log(`No email found for user ${assignedUsername}`);
+    }
 
     return {
       statusCode: 200,

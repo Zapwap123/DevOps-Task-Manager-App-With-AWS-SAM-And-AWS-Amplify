@@ -4,10 +4,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const TASKS_TABLE = process.env.TASKS_TABLE;
 
 // Allowed frontend origins
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://main.dtpj1l0uqgd70.amplifyapp.com",
-];
+const allowedOrigins = ["https://main.dtpj1l0uqgd70.amplifyapp.com"];
 
 exports.handler = async (event) => {
   const origin = event.headers.origin || event.headers.Origin;

@@ -6,6 +6,11 @@ Globals:
   Function:
     Timeout: 10
     Runtime: nodejs16.x
+    Environment:
+      Variables:
+        TASKS_TABLE: !Ref TasksTable
+        USER_POOL_ID: "eu-west-1_AyCv6g36t"
+        SENDER_EMAIL: "seth.anmawen@amalitechtraining.org" 
 
 Resources:
 
@@ -44,14 +49,12 @@ Resources:
         AllowMethods: "'OPTIONS,GET,POST,PUT'"
         AllowHeaders: "'Content-Type,Authorization'"
         AllowOrigin: "'https://main.dtpj1l0uqgd70.amplifyapp.com'"
-
       Auth:
         DefaultAuthorizer: CognitoAuth
         AddDefaultAuthorizerToCorsPreflight: false
         Authorizers:
           CognitoAuth:
             UserPoolArn: arn:aws:cognito-idp:eu-west-1:265267290744:userpool/eu-west-1_AyCv6g36t
-
 
   CreateTaskFunction:
     Type: AWS::Serverless::Function
@@ -64,11 +67,22 @@ Resources:
           Properties:
             RestApiId: !Ref TaskManagerApi
             Path: /tasks
-            Method: POST           
-      Environment:
-        Variables:
-          TASKS_TABLE: !Ref TasksTable
-          NOTIFICATION_TOPIC_ARN: !Ref TaskNotificationTopic
+            Method: POST
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminGetUser
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: !Ref TaskNotificationTopic
 
   GetTasksFunction:
     Type: AWS::Serverless::Function
@@ -82,9 +96,6 @@ Resources:
             RestApiId: !Ref TaskManagerApi
             Path: /tasks
             Method: GET
-      Environment:
-        Variables:
-          TASKS_TABLE: !Ref TasksTable
 
   UpdateTaskStatusFunction:
     Type: AWS::Serverless::Function
@@ -98,10 +109,21 @@ Resources:
             RestApiId: !Ref TaskManagerApi
             Path: /tasks/{taskId}/status
             Method: PUT
-      Environment:
-        Variables:
-          TASKS_TABLE: !Ref TasksTable
-          NOTIFICATION_TOPIC_ARN: !Ref TaskNotificationTopic
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminGetUser
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: !Ref TaskNotificationTopic
 
   DeadlineCheckerFunction:
     Type: AWS::Serverless::Function
@@ -113,10 +135,21 @@ Resources:
           Type: Schedule
           Properties:
             Schedule: rate(1 day)
-      Environment:
-        Variables:
-          TASKS_TABLE: !Ref TasksTable
-          NOTIFICATION_TOPIC_ARN: !Ref TaskNotificationTopic
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminGetUser
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: !Ref TaskNotificationTopic
 
 Outputs:
   ApiUrl:
