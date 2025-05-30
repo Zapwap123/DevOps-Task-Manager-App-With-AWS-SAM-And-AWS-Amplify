@@ -4,6 +4,44 @@ A full-stack serverless Task Management System for field teams. Admins can creat
 
 ---
 
+## The live application link:
+
+```
+https://main.dtpj1l0uqgd70.amplifyapp.com
+```
+
+**The login Details**:
+
+1.  **Admin User**:
+
+    - **Username**:
+
+    ```
+    zethtaskadmin
+
+    ```
+
+    - **Password**:
+
+    ```
+    vT649S6J!tpR8.e
+
+    ```
+
+2.  **Member User**:
+
+    - **Username**:
+
+    ```
+    zethapp2user
+    ```
+
+    - **Password**:
+
+    ```
+    Zap12345!
+    ```
+
 ## 📦 Stack Overview
 
 | Layer         | Technology                               |
@@ -13,8 +51,7 @@ A full-stack serverless Task Management System for field teams. Admins can creat
 | Backend       | AWS Lambda (Node.js) + API Gateway (SAM) |
 | Database      | DynamoDB                                 |
 | Notifications | AWS SES                                  |
-| Scheduler     | CloudWatch Events (via SAM)              |
-| CI/CD         | GitHub Actions (optional)                |
+| CI/CD         | GitHub + Amplify                         |
 
 ---
 
@@ -28,7 +65,7 @@ A full-stack serverless Task Management System for field teams. Admins can creat
 ## 📁 Folder Structure
 
 ```
-my-task-manager-app/
+DevOps-Task-Manager-App-With-AWS-SAM-And-AWS-Amplify/
 ├── my-task-manager-backend/   # SAM-based Lambda backend
 ├── my-task-manager-frontend/  # React + Amplify frontend
 ```
