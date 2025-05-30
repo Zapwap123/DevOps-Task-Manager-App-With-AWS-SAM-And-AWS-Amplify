@@ -228,4 +228,4 @@ MIT License © 2025
 
 ## 👤 Author
 
-Developed using AWS Serverless by `@Zapwap123`.
+Developed using AWS Serverless by `Seth Anmawen`.
