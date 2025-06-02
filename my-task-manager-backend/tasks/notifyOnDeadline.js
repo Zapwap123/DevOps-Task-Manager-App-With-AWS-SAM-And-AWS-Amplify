@@ -7,10 +7,12 @@ const TASKS_TABLE = process.env.TASKS_TABLE;
 const USER_POOL_ID = process.env.USER_POOL_ID;
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
 
+// Lambda function to notify users about tasks with deadlines reached
 exports.handler = async () => {
   try {
     const nowISOString = new Date().toISOString();
 
+    // Scan the tasks table for tasks with deadlines reached and not done
     const data = await dynamoDb
       .scan({
         TableName: TASKS_TABLE,
@@ -25,15 +27,19 @@ exports.handler = async () => {
       })
       .promise();
 
+    // Check if there are any tasks with deadlines reached
     if (!data.Items || data.Items.length === 0) {
       console.log("No pending tasks with deadline reached");
       return;
     }
 
+    // Iterate through the tasks and send email notifications
     for (const task of data.Items) {
       const username = task.assignedTo;
 
       let email;
+
+      // Fetch the user's email from Cognito
       try {
         const userData = await cognito
           .adminGetUser({
@@ -46,6 +52,8 @@ exports.handler = async () => {
           (attr) => attr.Name === "email"
         );
         email = emailAttr?.Value;
+
+        // If email is not found, log and continue to the next task
       } catch (err) {
         console.error(`Failed to get user ${username} from Cognito`, err);
         continue;
@@ -56,6 +64,7 @@ exports.handler = async () => {
         continue;
       }
 
+      // Prepare the email parameters
       const emailParams = {
         Source: SENDER_EMAIL,
         Destination: { ToAddresses: [email] },

@@ -8,13 +8,16 @@ const TASKS_TABLE = process.env.TASKS_TABLE;
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
 const USER_POOL_ID = process.env.USER_POOL_ID;
 
+// Lambda function to create a new task and send an email notification to the assigned user
 exports.handler = async (event) => {
+  // CORS headers to allow requests from the frontend
   const headers = {
     "Access-Control-Allow-Origin": "https://main.dtpj1l0uqgd70.amplifyapp.com",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
     "Access-Control-Allow-Methods": "OPTIONS,GET,POST,PUT",
   };
 
+  // Handle preflight requests (CORS)
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -23,6 +26,7 @@ exports.handler = async (event) => {
     };
   }
 
+  // Check if the user is an Admin
   try {
     const groups =
       event.requestContext.authorizer.claims["cognito:groups"] || [];
@@ -34,12 +38,13 @@ exports.handler = async (event) => {
       };
     }
 
+    // Parse the request body
     const body = JSON.parse(event.body);
     const taskId = uuidv4();
 
     const assignedUsername = body.assignedTo;
 
-    // 👇 Fetch email from Cognito
+    // Fetch email from Cognito
     const userData = await cognito
       .adminGetUser({
         UserPoolId: USER_POOL_ID,
@@ -51,12 +56,14 @@ exports.handler = async (event) => {
       (attr) => attr.Name === "email"
     );
 
+    // Check if the user has an email attribute
     if (!emailAttr) {
       throw new Error("Assigned user has no email attribute.");
     }
 
     const assignedEmail = emailAttr.Value;
 
+    // Create the task item
     const taskItem = {
       taskId,
       title: body.title,
@@ -67,6 +74,7 @@ exports.handler = async (event) => {
       createdAt: new Date().toISOString(),
     };
 
+    // Store the task in DynamoDB
     await dynamoDb
       .put({
         TableName: TASKS_TABLE,
@@ -74,6 +82,7 @@ exports.handler = async (event) => {
       })
       .promise();
 
+    // Send an email notification to the assigned user
     await ses
       .sendEmail({
         Source: SENDER_EMAIL,
@@ -91,6 +100,7 @@ exports.handler = async (event) => {
       })
       .promise();
 
+    // Return success response
     return {
       statusCode: 201,
       headers,
