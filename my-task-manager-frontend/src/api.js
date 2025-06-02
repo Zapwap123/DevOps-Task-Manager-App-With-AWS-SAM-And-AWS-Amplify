@@ -4,7 +4,7 @@ const apiUrl = "https://sk749ylzhl.execute-api.eu-west-1.amazonaws.com/Prod";
 
 export async function fetchWithAuth(path, options = {}) {
   const session = await fetchAuthSession();
-  const token = session.tokens?.idToken?.toString(); // ✅ Correct way in v6+
+  const token = session.tokens?.idToken?.toString();
 
   return fetch(`${apiUrl}${path}`, {
     ...options,
