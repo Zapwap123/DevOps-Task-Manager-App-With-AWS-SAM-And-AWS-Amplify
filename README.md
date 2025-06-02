@@ -74,6 +74,8 @@ DevOps-Task-Manager-App-With-AWS-SAM-And-AWS-Amplify/
 
 ## 🧱 Architecture Diagram
 
+![Architecture Diagram](./Serverless-Application-Architecture.drawio.png)
+
 ### Overall System Architecture
 
 ```plaintext
