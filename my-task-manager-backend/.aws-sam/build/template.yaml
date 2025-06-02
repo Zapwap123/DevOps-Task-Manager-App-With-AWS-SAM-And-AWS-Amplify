@@ -156,6 +156,20 @@ Resources:
             Ref: TaskNotificationTopic
     Metadata:
       SamResourceId: DeadlineCheckerFunction
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: PostConfirmationFunction
+      Handler: postConfirmation.handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+          Effect: Allow
+          Action:
+          - cognito-idp:AdminAddUserToGroup
+          Resource: arn:aws:cognito-idp:eu-west-1:265267290744:userpool/eu-west-1_AyCv6g36t
+    Metadata:
+      SamResourceId: PostConfirmationFunction
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint URL

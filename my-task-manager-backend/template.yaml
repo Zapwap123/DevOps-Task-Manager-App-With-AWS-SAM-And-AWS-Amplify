@@ -151,6 +151,19 @@ Resources:
                 - sns:Publish
               Resource: !Ref TaskNotificationTopic
 
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: tasks/
+      Handler: postConfirmation.handler
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            Effect: Allow
+            Action:
+              - cognito-idp:AdminAddUserToGroup
+            Resource: arn:aws:cognito-idp:eu-west-1:265267290744:userpool/eu-west-1_AyCv6g36t
+
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
