@@ -1,5 +1,7 @@
 import { fetchAuthSession } from "@aws-amplify/auth";
 
+// This file contains the API utility functions for making authenticated requests
+// to the backend. It uses the Amplify Auth module to fetch the current user's session
 export async function getCurrentUserGroups() {
   try {
     // Fetch the current auth session

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+// This component serves as the Member dashboard, providing links to various admin functionalities.
 export default function MemberDashboard() {
   return (
     <div className="p-4 max-w-4xl mx-auto">

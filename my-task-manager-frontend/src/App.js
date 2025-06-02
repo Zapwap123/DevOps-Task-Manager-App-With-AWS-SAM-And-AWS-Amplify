@@ -11,6 +11,7 @@ import { getCurrentUserGroups } from "./auth";
 import awsExports from "./aws-exports";
 import "@aws-amplify/ui-react/styles.css";
 
+// Importing pages for different routes
 import AdminDashboard from "./pages/AdminDashboard";
 import MemberDashboard from "./pages/MemberDashboard";
 import CreateTask from "./pages/CreateTask";
@@ -19,8 +20,12 @@ import UpdateTaskStatus from "./pages/UpdateTaskStatus";
 import DeadlineChecker from "./pages/DeadlineChecker";
 import NotAuthorized from "./pages/NotAuthorized";
 
+// Configure Amplify with the AWS exports
+// This file contains the main App component that sets up routing and authentication
+// and imports the necessary components for the application.
 Amplify.configure(awsExports);
 
+// Amplify UI styles
 export default function App() {
   return (
     <Authenticator>
@@ -29,15 +34,18 @@ export default function App() {
   );
 }
 
+// RouterWrapper component that handles routing based on user group
 function RouterWrapper({ user, signOut }) {
   const [group, setGroup] = useState(null);
 
+  // Fetch the current user's group when the component mounts and set it in the state.
   useEffect(() => {
     getCurrentUserGroups().then(setGroup);
   }, []);
 
   if (!group) return <p className='p-4'>Loading...</p>;
 
+  // Render the application with different routes based on user group
   return (
     <Router>
       <div className='p-4'>
@@ -48,6 +56,7 @@ function RouterWrapper({ user, signOut }) {
           Sign Out
         </button>
         <Routes>
+          {/* If the user is an Admin, redirect them to these pages */}
           {group === "Admin" && (
             <>
               <Route path='/' element={<AdminDashboard />} />
@@ -57,6 +66,7 @@ function RouterWrapper({ user, signOut }) {
               <Route path='*' element={<Navigate to='/' />} />
             </>
           )}
+          {/* If the user is an Member, redirect them to these pages */}
           {group === "Member" && (
             <>
               <Route path='/' element={<MemberDashboard />} />
@@ -66,6 +76,7 @@ function RouterWrapper({ user, signOut }) {
               <Route path='*' element={<Navigate to='/' />} />
             </>
           )}
+          {/* If the user is not authorized, redirect them to this page */}
           <Route path='/not-authorized' element={<NotAuthorized />} />
         </Routes>
       </div>

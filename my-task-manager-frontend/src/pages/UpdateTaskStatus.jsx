@@ -2,9 +2,26 @@ import { useEffect, useState } from "react";
 import { fetchWithAuth } from "../api";
 import { Link } from "react-router-dom";
 
+// Function to update the status of a task
+const updateTaskStatus = async (taskId, newStatus) => {
+
+  // Fetch the task with authentication and update its status
+  try {
+    await fetchWithAuth(`/tasks/${taskId}/status`, {
+      method: "PUT",
+      body: JSON.stringify({ status: newStatus }),
+    });
+    alert("Status updated");
+  } catch (err) {
+    alert("Failed to update status");
+  }
+};
+
+// Function to Update Task Status
 export default function UpdateTaskStatus() {
   const [tasks, setTasks] = useState([]);
 
+  // Fetch tasks from the backend when the component mounts and set them in the state.
   useEffect(() => {
     fetchWithAuth("/tasks").then(setTasks).catch(console.error);
   }, []);
@@ -26,6 +43,7 @@ export default function UpdateTaskStatus() {
     }
   };
 
+  // Render the component with a list of tasks and buttons to update their status
   return (
     <div className="p-4 max-w-3xl mx-auto">
       <div className="mb-4">

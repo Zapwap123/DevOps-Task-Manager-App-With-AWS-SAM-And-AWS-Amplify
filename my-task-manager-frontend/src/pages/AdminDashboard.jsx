@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+// This component serves as the admin dashboard, providing links to various admin functionalities.
 export default function AdminDashboard() {
   const links = [
     { path: "/create", label: "Create Task" },
@@ -7,11 +8,13 @@ export default function AdminDashboard() {
     { path: "/deadlines", label: "Deadline Checker" },
   ];
 
+  // Render the admin dashboard with links to different functionalities.
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-md">
         <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Admin Dashboard</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Map over the links array to render a link for each functionality. */}
           {links.map(({ path, label }) => (
             <Link
               key={path}

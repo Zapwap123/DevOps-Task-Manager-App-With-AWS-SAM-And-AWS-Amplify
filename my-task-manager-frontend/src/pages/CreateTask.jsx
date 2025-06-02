@@ -2,6 +2,7 @@ import { useState } from "react";
 import { fetchWithAuth } from "../api";
 import { Link } from "react-router-dom";
 
+// This component allows admins to create new tasks by filling out a form.
 export default function CreateTask() {
   const [form, setForm] = useState({
     title: "",
@@ -10,9 +11,11 @@ export default function CreateTask() {
     deadline: "",
   });
 
+  // Handle form input changes and update the state accordingly.
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  // Handle form submission, sending the task data to the backend.
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -27,6 +30,8 @@ export default function CreateTask() {
     }
   };
 
+  // Render the form for creating a new task.
+  // It includes fields for title, description, assigned user, and deadline.
   return (
     <div className="p-4 max-w-md mx-auto">
       {/* Back Button */}
@@ -41,6 +46,7 @@ export default function CreateTask() {
 
       <h1 className="text-xl font-bold mb-4">Create Task</h1>
 
+      {/* Task Creation Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           name="title"

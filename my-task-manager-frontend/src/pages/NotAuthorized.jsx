@@ -1,6 +1,6 @@
-// src/pages/NotAuthorized.jsx
 import React from "react";
 
+// This component displays a message indicating that the user is not authorized to view the page.
 export default function NotAuthorized() {
   return (
     <div className="p-4">

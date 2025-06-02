@@ -2,10 +2,19 @@ import { useEffect, useState } from "react";
 import { fetchWithAuth } from "../api";
 import { Link } from "react-router-dom";
 
+// Function to check if a task is overdue
+function isOverdue(deadline) {
+  const today = new Date().toISOString().split("T")[0];
+  return deadline < today;
+}
+
+// This component displays overdue tasks for admins.
 export default function DeadlineChecker() {
   const [tasks, setTasks] = useState([]);
   const today = new Date().toISOString().split("T")[0];
 
+  // Fetch overdue tasks from the backend when the component mounts
+  // and whenever the 'today' variable changes.
   useEffect(() => {
     fetchWithAuth("/tasks").then((data) => {
       const overdue = data.filter(
@@ -15,6 +24,7 @@ export default function DeadlineChecker() {
     });
   }, [today]);
 
+  // Render the component with a list of overdue tasks
   return (
     <div className="p-4 max-w-4xl mx-auto">
       {/* Back Button */}
