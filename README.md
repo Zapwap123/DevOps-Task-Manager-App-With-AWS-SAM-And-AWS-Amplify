@@ -174,13 +174,6 @@ Use `amplify import auth` to link your Cognito User Pool.
 
 ---
 
-## 🔧 Manual Tasks, Yet to be Automated in Code
-
-- ✅ Add `Member` and `Admin` groups to Cognito
-- ✅ Add PostConfirmation Lambda to auto-assign group
-
----
-
 ## 📬 API Endpoints
 
 | Method | Endpoint                 | Description                                      |
